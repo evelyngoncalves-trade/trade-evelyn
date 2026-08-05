@@ -69,9 +69,6 @@ with col_ia:
         if not api_key:
             st.warning("⚠️ Insira sua Gemini API Key na barra lateral para habilitar a análise da IA!")
         elif not uploaded_file:
-            st.warning("⚠️ Envie uma imagem do gráfico antes de analisar!")
-        else:
-            with st.spinner("Analisando suporte, resistência e tendência..."):
                 try:
                     # Carrega a imagem via PIL
                     image = Image.open(uploaded_file)
@@ -89,10 +86,8 @@ with col_ia:
                     )
 
                     response = client.models.generate_content(
-    model='gemini-1.5-pro-latest',
-    contents=[prompt, image]
-)
-
+                        model='gemini-1.5-flash',
+                        contents=[prompt, image]
                     )
 
                     st.markdown("### 📊 Análise da IA (Gemini)")
