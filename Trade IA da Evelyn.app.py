@@ -89,8 +89,10 @@ with col_ia:
                     )
 
                     response = client.models.generate_content(
-                        model='gemini-1.5-flash',
-                        contents=[prompt, image]
+    model='gemini-1.5-pro-latest',
+    contents=[prompt, image]
+)
+
                     )
 
                     st.markdown("### 📊 Análise da IA (Gemini)")
