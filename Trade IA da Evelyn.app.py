@@ -126,48 +126,24 @@ with col_dash:
 with col_ia:
     st.subheader("🤖 IA Co-Piloto de Análise")
 
-    from streamlit_paste_button import paste_icon_button
-
-    # Opção 1: Upload / Arrastar
+    # Upload nativo do Streamlit
     uploaded_file = st.file_uploader("Envie ou arraste o print do gráfico (M1/M5)", type=["png", "jpg", "jpeg"])
 
-    # Opção 2: Colar da Área de Transferência
-    paste_result = paste_icon_button(
-        label="📋 Colar print da área de transferência",
-        text_color="#ffffff",
-        background_color="#262730",
-        hover_background_color="#31333F",
-    )
-
-    image_data = None
-
     if uploaded_file is not None:
-        image_data = uploaded_file
-    elif paste_result.image_data is not None:
-        image_data = paste_result.image_data
-
-    if image_data is not None:
-        st.image(image_data, caption="Gráfico Carregado", use_container_width=True)
+        st.image(uploaded_file, caption="Gráfico Carregado", use_container_width=True)
 
     analisar = st.button("🔍 Analisar Entrada com IA")
 
     if analisar:
         if not api_key:
             st.warning("⚠️ Insira sua OpenAI API Key na barra lateral para habilitar a análise da IA!")
-        elif image_data is None:
-            st.warning("⚠️ Envie ou cole uma imagem do gráfico antes de analisar!")
+        elif uploaded_file is None:
+            st.warning("⚠️ Envie uma imagem do gráfico antes de analisar!")
         else:
             with st.spinner("Analisando suporte, resistência e tendência..."):
                 try:
                     # Preparando imagem para a API Vision
-                    if hasattr(image_data, 'getvalue'):
-                        bytes_data = image_data.getvalue()
-                    else:
-                        import io
-                        buf = io.BytesIO()
-                        image_data.save(buf, format="PNG")
-                        bytes_data = buf.getvalue()
-
+                    bytes_data = uploaded_file.getvalue()
                     import base64
                     base64_image = base64.b64encode(bytes_data).decode('utf-8')
 
