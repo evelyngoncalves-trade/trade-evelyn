@@ -1,8 +1,8 @@
 import streamlit as st
-from openai import OpenAI
+from google import genai
+from google.genai import types
 import pandas as pd
 from PIL import Image
-import base64
 
 # Configuração da página
 st.set_page_config(page_title="Trade IA - Evelyn", layout="wide")
@@ -12,7 +12,7 @@ st.title("📈 Co-Piloto de Trade IA")
 # Sidebar - Configurações
 with st.sidebar:
     st.header("⚙️ Configurações")
-    api_key = st.text_input("Cole sua OpenAI API Key aqui:", type="password")
+    api_key = st.text_input("Cole sua Google Gemini API Key aqui:", type="password")
     
     st.header("💰 Parâmetros da Banca")
     banca_inicial = st.number_input("Banca Atual (R$)", value=50.0, step=5.0)
@@ -67,48 +67,34 @@ with col_ia:
 
     if st.button("🔍 Analisar Entrada com IA"):
         if not api_key:
-            st.warning("⚠️ Insira sua OpenAI API Key na barra lateral para habilitar a análise da IA!")
+            st.warning("⚠️ Insira sua Gemini API Key na barra lateral para habilitar a análise da IA!")
         elif not uploaded_file:
             st.warning("⚠️ Envie uma imagem do gráfico antes de analisar!")
         else:
             with st.spinner("Analisando suporte, resistência e tendência..."):
                 try:
-                    bytes_data = uploaded_file.getvalue()
-                    base64_image = base64.b64encode(bytes_data).decode('utf-8')
+                    # Carrega a imagem via PIL
+                    image = Image.open(uploaded_file)
 
-                    client = OpenAI(api_key=api_key)
+                    # Inicializa o cliente da API do Gemini
+                    client = genai.Client(api_key=api_key)
 
-                    response = client.chat.completions.create(
-                        model="gpt-4o",
-                        messages=[
-                            {
-                                "role": "user",
-                                "content": [
-                                    {
-                                        "type": "text",
-                                        "text": (
-                                            "Você é um especialista em Price Action para Opções Binárias (Blitz/M1/M5). "
-                                            "Analise a imagem deste gráfico e responda de forma objetiva:\n"
-                                            "1. Tendência Principal (Alta, Baixa ou Lateral)\n"
-                                            "2. Padrão das últimas velas e pavios\n"
-                                            "3. Níveis de Suporte ou Resistência mais próximos\n"
-                                            "4. Recomendação final: [COMPRA / VENDA / AGUARDAR] com breve justificativa."
-                                        )
-                                    },
-                                    {
-                                        "type": "image_url",
-                                        "image_url": {
-                                            "url": f"data:image/png;base64,{base64_image}"
-                                        }
-                                    }
-                                ]
-                            }
-                        ],
-                        max_tokens=400
+                    prompt = (
+                        "Você é um especialista em Price Action para Opções Binárias (Blitz/M1/M5). "
+                        "Analise a imagem deste gráfico e responda de forma objetiva:\n"
+                        "1. Tendência Principal (Alta, Baixa ou Lateral)\n"
+                        "2. Padrão das últimas velas e pavios\n"
+                        "3. Níveis de Suporte ou Resistência mais próximos\n"
+                        "4. Recomendação final: [COMPRA / VENDA / AGUARDAR] com breve justificativa."
                     )
 
-                    st.markdown("### 📊 Análise da IA")
-                    st.write(response.choices[0].message.content)
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=[prompt, image]
+                    )
+
+                    st.markdown("### 📊 Análise da IA (Gemini)")
+                    st.write(response.text)
 
                 except Exception as e:
                     st.error(f"Erro ao processar análise da IA: {e}")
