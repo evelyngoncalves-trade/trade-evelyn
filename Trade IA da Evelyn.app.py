@@ -129,7 +129,7 @@ with col_ia:
     uploaded_file = st.file_uploader("Envie o Print do Gráfico da Gomere Broker (M1/M5)", type=["png", "jpg", "jpeg"])
     
     if uploaded_file is not None:
-        st.image(uploaded_file, caption="Gráfico Carregado", use_column_width=True)
+       st.image(uploaded_file, caption="Gráfico Carregado", use_container_width=True)
         
         analisar = st.button("🔍 Analisar Entrada com IA")
         
