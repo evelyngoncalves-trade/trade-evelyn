@@ -125,46 +125,53 @@ with col_dash:
 # ==================================================================
 with col_ia:
     st.subheader("🤖 IA Co-Piloto de Análise")
-    
-    uploaded_file = st.file_uploader("Envie o Print do Gráfico da Gomere Broker (M1/M5)", type=["png", "jpg", "jpeg"])
-    
+
+    from streamlit_paste_button import paste_icon_button
+
+    # Opção 1: Upload / Arrastar
+    uploaded_file = st.file_uploader("Envie ou arraste o print do gráfico (M1/M5)", type=["png", "jpg", "jpeg"])
+
+    # Opção 2: Colar da Área de Transferência
+    paste_result = paste_icon_button(
+        label="📋 Colar print da área de transferência",
+        text_color="#ffffff",
+        background_color="#262730",
+        hover_background_color="#31333F",
+    )
+
+    image_data = None
+
     if uploaded_file is not None:
-       st.image(uploaded_file, caption="Gráfico Carregado", use_container_width=True)
-        
-        analisar = st.button("🔍 Analisar Entrada com IA")
-        
-        if analisar:
-            if not api_key:
-                st.warning("⚠️ Insira sua OpenAI API Key na barra lateral para habilitar a análise da IA!")
-            else:
-                with st.spinner("Analisando suporte, resistência e tendência..."):
-                    try:
-                        # Preparando imagem para a API Vision
-                        bytes_data = uploaded_file.getvalue()
-                        import base64
-                        base64_image = base64.b64encode(bytes_data).decode('utf-8')
-                        
-                        client = OpenAI(api_key=api_key)
-                        
-                        # Prompt especialista pré-configurado
-                        prompt_sistema = """
-                        Você é uma IA assistente de Day Trade em M1/Blitz para a Evelyn. 
-                        Regras fixas da Evelyn:
-                        - Mão fixa de R$ 5,00.
-                        - Foco em altíssima assertividade (Suporte/Resistência a favor da tendência).
-                        - Não arriscar. Se o gráfico estiver confuso ou sem direção, recomende NÃO entrar.
+        image_data = uploaded_file
+    elif paste_result.image_data is not None:
+        image_data = paste_result.image_data
 
-                        Analise a imagem enviada e responda no seguinte formato:
-                        1. **Tendência Principal:** [Alta / Baixa / Consolidação]
-                        2. **Regiões Chave:** Onde estão o Suporte (Chão) e Resistência (Teto) mais próximos.
-                        3. **Veredito:** [ENTRADA FAVORÁVEL DE COMPRA / ENTRADA FAVORÁVEL DE VENDA / AGUARDAR FORA DO MERCADO]
-                        4. **Motivo Rápido:** 2 linhas resumindo a decisão.
-                        """
+    if image_data is not None:
+        st.image(image_data, caption="Gráfico Carregado", use_container_width=True)
 
-                        response = client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=[
-                                {
+    analisar = st.button("🔍 Analisar Entrada com IA")
+
+    if analisar:
+        if not api_key:
+            st.warning("⚠️ Insira sua OpenAI API Key na barra lateral para habilitar a análise da IA!")
+        elif image_data is None:
+            st.warning("⚠️ Envie ou cole uma imagem do gráfico antes de analisar!")
+        else:
+            with st.spinner("Analisando suporte, resistência e tendência..."):
+                try:
+                    # Preparando imagem para a API Vision
+                    if hasattr(image_data, 'getvalue'):
+                        bytes_data = image_data.getvalue()
+                    else:
+                        import io
+                        buf = io.BytesIO()
+                        image_data.save(buf, format="PNG")
+                        bytes_data = buf.getvalue()
+
+                    import base64
+                    base64_image = base64.b64encode(bytes_data).decode('utf-8')
+
+                    client = OpenAI(api_key=api_key)
                                     "role": "user",
                                     "content": [
                                         {"type": "text", "text": prompt_sistema},
