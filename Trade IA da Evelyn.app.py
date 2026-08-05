@@ -172,24 +172,38 @@ with col_ia:
                     base64_image = base64.b64encode(bytes_data).decode('utf-8')
 
                     client = OpenAI(api_key=api_key)
-                                    "role": "user",
-                                    "content": [
-                                        {"type": "text", "text": prompt_sistema},
-                                        {
-                                            "type": "image_url",
-                                            "image_url": {
-                                                "url": f"data:image/jpeg;base64,{base64_image}"
-                                            },
-                                        },
-                                    ],
-                                }
-                            ],
-                            max_tokens=350,
-                        )
-                        
-                        resultado = response.choices[0].message.content
-                        st.markdown("### 📋 Resposta da IA:")
-                        st.info(resultado)
 
-                    except Exception as e:
-                        st.error(f"Erro ao processar imagem: {e}")
+                    response = client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": (
+                                            "Você é um especialista em Price Action para Opções Binárias (Blitz/M1/M5). "
+                                            "Analise a imagem deste gráfico e responda de forma objetiva:\n"
+                                            "1. Tendência Principal (Alta, Baixa ou Lateral)\n"
+                                            "2. Padrão das últimas velas e pavios\n"
+                                            "3. Níveis de Suporte ou Resistência mais próximos\n"
+                                            "4. Recomendação final: [COMPRA / VENDA / AGUARDAR] com breve justificativa."
+                                        )
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": f"data:image/png;base64,{base64_image}"
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        max_tokens=400
+                    )
+
+                    st.markdown("### 📊 Análise da IA")
+                    st.write(response.choices[0].message.content)
+
+                except Exception as e:
+                    st.error(f"Erro ao processar análise da IA: {e}")
