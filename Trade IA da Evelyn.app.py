@@ -1,6 +1,5 @@
 import streamlit as st
 from google import genai
-from google.genai import types
 import pandas as pd
 from PIL import Image
 
@@ -26,6 +25,7 @@ with st.sidebar:
     if st.button("🔄 Resetar Dia"):
         st.session_state.wins = 0
         st.session_state.losses = 0
+        st.session_state.analise_resultado = None
         st.rerun()
 
 # Inicialização do Session State
@@ -33,6 +33,8 @@ if "wins" not in st.session_state:
     st.session_state.wins = 0
 if "losses" not in st.session_state:
     st.session_state.losses = 0
+if "analise_resultado" not in st.session_state:
+    st.session_state.analise_resultado = None
 
 # Layout Principal (2 Colunas)
 col_gestao, col_ia = st.columns(2)
@@ -69,11 +71,11 @@ with col_ia:
         if not api_key:
             st.warning("⚠️ Insira sua Gemini API Key na barra lateral para habilitar a análise da IA!")
         elif not uploaded_file:
+            st.warning("⚠️ Envie uma imagem do gráfico antes de analisar!")
+        else:
+            with st.spinner("Analisando suporte, resistência e tendência..."):
                 try:
-                    # Carrega a imagem via PIL
                     image = Image.open(uploaded_file)
-
-                    # Inicializa o cliente da API do Gemini
                     client = genai.Client(api_key=api_key)
 
                     prompt = (
@@ -90,9 +92,15 @@ with col_ia:
                         contents=[prompt, image]
                     )
 
-                    st.markdown("### 📊 Análise da IA (Gemini)")
-                    st.write(response.text)
+                    # Guarda o resultado na memória do app para não sumir no reload
+                    st.session_state.analise_resultado = response.text
 
                 except Exception as e:
                     st.error(f"Erro ao processar análise da IA: {e}")
 
+    # Exibe a análise salva se ela existir
+    if st.session_state.analise_resultado:
+        st.markdown("---")
+        st.markdown("### 📊 Análise da IA (Gemini)")
+        st.write(st.session_state.analise_resultado)
+    
