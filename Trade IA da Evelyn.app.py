@@ -62,7 +62,11 @@ with col_gestao:
 with col_ia:
     st.subheader("🤖 IA Co-Piloto de Análise")
 
-    uploaded_file = st.file_uploader("Envie ou arraste o print do gráfico (M1/M5)", type=["png", "jpg", "jpeg"], key="grafico_uploader")
+    uploaded_file = st.file_uploader(
+        "📋 Cole a imagem com CTRL+V no campo abaixo ou arraste o print do gráfico (M1/M5)", 
+        type=["png", "jpg", "jpeg"], 
+        key="grafico_uploader"
+    )
 
     if uploaded_file:
         st.image(uploaded_file, caption="Gráfico Carregado", use_container_width=True)
@@ -71,7 +75,7 @@ with col_ia:
         if not api_key:
             st.warning("⚠️ Insira sua Gemini API Key na barra lateral para habilitar a análise da IA!")
         elif not uploaded_file:
-            st.warning("⚠️ Envie uma imagem do gráfico antes de analisar!")
+            st.warning("⚠️ Envie ou cole uma imagem do gráfico antes de analisar!")
         else:
             with st.spinner("Analisando suporte, resistência e tendência..."):
                 try:
@@ -88,7 +92,7 @@ with col_ia:
                     )
 
                     response = client.models.generate_content(
-                        model='gemini-2.5-flash',
+                        model='gemini-2.0-flash',
                         contents=[prompt, image]
                     )
 
