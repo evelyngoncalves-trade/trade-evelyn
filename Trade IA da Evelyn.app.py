@@ -88,11 +88,11 @@ with col_ia:
                     )
 
                     response = client.models.generate_content(
-                        model='gemini-1.5-flash',
+                        model='gemini-2.5-flash',
                         contents=[prompt, image]
                     )
 
-                    # Guarda o resultado na memória do app para não sumir no reload
+                    # Guarda o resultado no session_state para não sumir no reload
                     st.session_state.analise_resultado = response.text
 
                 except Exception as e:
@@ -103,4 +103,3 @@ with col_ia:
         st.markdown("---")
         st.markdown("### 📊 Análise da IA (Gemini)")
         st.write(st.session_state.analise_resultado)
-    
