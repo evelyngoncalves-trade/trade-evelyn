@@ -93,11 +93,15 @@ with col_ia:
 
                     prompt = (
                         "Você é um especialista em Price Action para Opções Binárias (Blitz/M1/M5). "
-                        "Analise a imagem deste gráfico e responda de forma objetiva:\n"
-                        "1. Tendência Principal (Alta, Baixa ou Lateral)\n"
-                        "2. Padrão das últimas velas e pavios\n"
-                        "3. Níveis de Suporte ou Resistência mais próximos\n"
-                        "4. Recomendação final: [COMPRA / VENDA / AGUARDAR] com breve justificativa."
+                        "O trader precisa decidir em poucos segundos. Responda SOMENTE no formato "
+                        "abaixo, sem introdução, sem repetir a pergunta, sem parágrafos longos:\n\n"
+                        "VEREDITO: [COMPRA / VENDA / AGUARDAR]\n"
+                        "CONFIANÇA: [Alta / Média / Baixa]\n"
+                        "MOTIVO: (uma linha, direto ao ponto)\n"
+                        "SUPORTE/RESISTÊNCIA: (nível mais próximo visível no gráfico)\n\n"
+                        "Regra: se o gráfico estiver lateral, sem padrão claro, ou com pavios "
+                        "contraditórios, marque CONFIANÇA: Baixa e VEREDITO: AGUARDAR — não force "
+                        "uma direção só para parecer decisivo."
                     )
 
                     response = client.models.generate_content(
